@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Post } from './interfaces/post.interface';
+import { Post as IPost } from './interfaces/post.interface'; 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 
@@ -10,7 +10,7 @@ export class PostsService {
   private lastPostId: number = 2;
 
      // DB 역할을 하는 더미 데이터 배열 (메모리에 저장)
-  private posts: Post[] = [
+  private posts: IPost[] = [
     {
       id: '1',
       authorId: 'user-1',
@@ -28,10 +28,10 @@ export class PostsService {
   ];
 
   // [C] Create 로직
-  create(createPostDto: CreatePostDto): Post { 
+  create(createPostDto: CreatePostDto): IPost { 
         // ID를 1 증가시키고 문자열로 변환하여 할당.
         this.lastPostId += 1;
-        const newPost: Post = {
+        const newPost: IPost = {
             id: String(this.lastPostId), // 자동 증가된 ID 사용
             createdAt: new Date(),
             ...createPostDto,
@@ -41,7 +41,7 @@ export class PostsService {
     }
 
   // [R] Read - 게시글 ID로 단일 조회
-  findOneById(id: string): Post {
+  findOneById(id: string): IPost {
     const post = this.posts.find((p) => p.id === id);
     if (!post) {
       throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
@@ -50,23 +50,23 @@ export class PostsService {
   }
 
   // [R] Read - 작성자 ID로 목록 조회
-  findAllByAuthorId(authorId: string): Post[] {
+  findAllByAuthorId(authorId: string): IPost[] {
     return this.posts.filter((p) => p.authorId === authorId);
   }
   // [R] Read - 전체 조회 (Controller에서 사용)
-  getAllPosts(): Post[] {
+  getAllPosts(): IPost[] {
     return this.posts;
   }
 
   // [U] Update - 게시글 수정
-  update(id: string, updatePostDto: UpdatePostDto): Post {
+  update(id: string, updatePostDto: UpdatePostDto): IPost {
     const postIndex = this.posts.findIndex((p) => p.id === id);
 
     if (postIndex === -1) {
       throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
     }
 
-    const updatedPost: Post = {
+    const updatedPost: IPost = {
       ...this.posts[postIndex],
       ...updatePostDto,
     };

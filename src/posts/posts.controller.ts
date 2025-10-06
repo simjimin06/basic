@@ -2,7 +2,7 @@ import { Controller, Post, Get, Patch, Delete,
     Body, Param, UsePipes, ValidationPipe, NotFoundException,
  } from '@nestjs/common';
 import {PostsService} from './posts.service';
-import { Post }  from './interfaces/post.interface';
+import { Post as IPost }  from './interfaces/post.interface';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostIdParam, AuthorIdParam } from './dto/params-post.dto';
@@ -16,22 +16,22 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Post()
-  createPost(@Body() createPostDto: CreatePostDto): Post {
+  createPost(@Body() createPostDto: CreatePostDto): IPost {
     return this.postsService.create(createPostDto);
   }
   
  @Get()
-  getAllPosts(): Post[] {
+  getAllPosts(): IPost[] {
     return this.postsService.getAllPosts();
   }
 
   @Get(':id')
-  findOneById(@Param() params: PostIdParam): Post {
+  findOneById(@Param() params: PostIdParam): IPost {
     return this.postsService.findOneById(params.id);
   }
 
   @Get('by-author/:authorId')
-  findAllByAuthorId(@Param() params: AuthorIdParam): Post[] {
+  findAllByAuthorId(@Param() params: AuthorIdParam): IPost[] {
     return this.postsService.findAllByAuthorId(params.authorId);
   }
 
@@ -39,7 +39,7 @@ export class PostsController {
   update(
     @Param() params: PostIdParam, 
     @Body() updatePostDto: UpdatePostDto,
-  ): Post {
+  ): IPost {
     if (Object.keys(updatePostDto).length === 0) {
       throw new NotFoundException('수정할 내용(제목 또는 내용)을 제공해야 합니다.');
     }
