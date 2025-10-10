@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// PostgreSql 연결
+datasource db {
+  provider = "postgresql"
+  // .env 파일의 DATABASE_URL 변수를 사용
+  url      = env("DATABASE_URL")
+}
+
+// 게시글(Post) 모델 정의(post.service.ts에 있던 json 더미들)
+
+model Post {
+  // id: 기본 키 (Primary Key), 데이터베이스에서 자동으로 1씩 증가
+  id        Int      @id @default(autoincrement())
+  
+  // authorId: 작성자 ID (간단한 문자열 사용)
+  authorId  String
+  
+  // title, content: 게시글 제목과 내용
+  title     String
+  content   String
+  
+  // createdAt: 생성 시간 (현재 시각으로 자동 기록)
+  createdAt DateTime @default(now())
+  
+  // updatedAt: 업데이트 시간 (수정 시각으로 자동 업데이트)
+  updatedAt DateTime @updatedAt
+}

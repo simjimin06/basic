@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { PostsRepository } from './posts.repository/posts.repository';
 import { Post as IPost } from './interfaces/post.interface'; 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -6,85 +7,50 @@ import { UpdatePostDto } from './dto/update-post.dto';
 
 @Injectable()
 export class PostsService {
+  // PostsRepository를 주입받음.
+    constructor(private readonly postsRepository: PostsRepository) {}
 
-  private lastPostId: number = 2;
-
-     // DB 역할을 하는 더미 데이터 배열 (메모리에 저장)
-  private posts: IPost[] = [
-    {
-      id: '1',
-      authorId: 'user-1',
-      title: '첫 번째 게시글입니다.',
-      content: '이게 말이 돼..?',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      authorId: 'user-2',
-      title: '두 번째 작성자의 글',
-      content: '제발 살려주세요ㅜ',
-      createdAt: new Date(),
-    },
-  ];
-
-  // [C] Create 로직
-  create(createPostDto: CreatePostDto): IPost { 
-        // ID를 1 증가시키고 문자열로 변환하여 할당.
-        this.lastPostId += 1;
-        const newPost: IPost = {
-            id: String(this.lastPostId), // 자동 증가된 ID 사용
-            createdAt: new Date(),
-            ...createPostDto,
-        };
-        this.posts.push(newPost);
-        return newPost;
+  // [C] Create
+    async create(createPostDto: CreatePostDto): Promise<IPost> {
+        return this.postsRepository.create(createPostDto);
     }
 
-  // [R] Read - 게시글 ID로 단일 조회
-  findOneById(id: string): IPost {
-    const post = this.posts.find((p) => p.id === id);
-    if (!post) {
-      throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
-    }
-    return post;
-  }
-
-  // [R] Read - 작성자 ID로 목록 조회
-  findAllByAuthorId(authorId: string): IPost[] {
-    return this.posts.filter((p) => p.authorId === authorId);
-  }
-  // [R] Read - 전체 조회 (Controller에서 사용)
-  getAllPosts(): IPost[] {
-    return this.posts;
-  }
-
-  // [U] Update - 게시글 수정
-  update(id: string, updatePostDto: UpdatePostDto): IPost {
-    const postIndex = this.posts.findIndex((p) => p.id === id);
-
-    if (postIndex === -1) {
-      throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
+  // [R] Read - 게시글 ID로 단일 조회 (NotFoundException 처리?)
+    async findOneById(id: string): Promise<IPost> {
+        // findOneById는 DB에서 id를 숫자로 다루기 때문에 Number()로 변환됨.
+        const post = await this.postsRepository.findOneById(Number(id));
+        if (!post) {
+            throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
+        }
+        return post;
     }
 
-    const updatedPost: IPost = {
-      ...this.posts[postIndex],
-      ...updatePostDto,
-    };
-
-    this.posts[postIndex] = updatedPost;
-    return updatedPost;
-  }
-
-  // [D] Delete - 게시글 삭제
-  delete(id: string): { message: string } {
-    const initialLength = this.posts.length;
-    this.posts = this.posts.filter((p) => p.id !== id);
-
-    if (this.posts.length === initialLength) {
-      throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
+     // [R] Read - 작성자 ID로 목록 조회
+    async findAllByAuthorId(authorId: string): Promise<IPost[]> {
+        return this.postsRepository.findAllByAuthorId(authorId);
     }
 
-    return { message: `ID가 ${id}인 게시글이 성공적으로 삭제되었습니다.` };
-  }
 
+    // [R] Read - 전체 조회
+    async findAll(): Promise<IPost[]> {
+        return this.postsRepository.findAll();
+    }
+
+
+     // [U] Update - 게시글 수정
+    async update(id: string, updatePostDto: UpdatePostDto): Promise<IPost> {
+        // 수정 전 해당 ID의 게시글이 있는지 확인 (에러 핸들링*)
+        await this.findOneById(id); 
+
+        return this.postsRepository.update(Number(id), updatePostDto);
+    }
+    // [D] Delete - 게시글 삭제
+    async delete(id: string): Promise<{ message: string }> {
+        // 삭제 전 해당 ID의 게시글이 있는지 확인
+        await this.findOneById(id); 
+        
+        await this.postsRepository.delete(Number(id));
+        
+        return { message: `ID가 ${id}인 게시글이 성공적으로 삭제되었습니다.` };
+    }
 }

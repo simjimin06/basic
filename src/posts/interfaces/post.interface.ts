@@ -3,7 +3,7 @@
 
 // 게시글 데이터의 형태를 정의하는 인터페이스(이걸 정의를 해야 DTO를 하던지 하지.)
 export interface Post {
-  id: string;
+  id: number;
   authorId: string;
   title: string;
   content: string;
