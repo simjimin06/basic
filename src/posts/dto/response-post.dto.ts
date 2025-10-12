@@ -7,6 +7,7 @@ import { Post as IPost } from '@prisma/client';
  */
 
 export class PostResponseDto {
+    
   @ApiProperty({ description: '게시글 ID (Int)', example: 1 })
   id: number; // Prisma Int 타입은 TypeScript에서 number로 변환됨.
 
@@ -32,8 +33,5 @@ export class PostResponseDto {
     format: 'date-time' 
   })
   updatedAt: Date;
-  
-  constructor(model: IPost) { 
-        Object.assign(this, model); // 변환 로직은 DTO가 스스로 처리
-    }
+
 }
