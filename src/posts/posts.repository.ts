@@ -1,10 +1,10 @@
 // src/posts/posts.repository.ts
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../prisma/prisma.service'; // Prisma DB 연결 서비스
-import { Post } from '../interfaces/post.interface'; // Post 타입
-import { CreatePostDto } from '../dto/create-post.dto';
-import { UpdatePostDto } from '../dto/update-post.dto';
+import { PrismaService } from '../../prisma/prisma.service'; // Prisma DB 연결 서비스
+import { Post } from './interfaces/post.interface'; // Post 타입
+import { CreatePostDto } from './dto/create-post.dto';
+import { UpdatePostDto } from './dto/update-post.dto';
 
 // Repository 계층은 DB와의 모든 통신을 전담
 @Injectable()
