@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Post as IPost } from '@prisma/client'; 
 
 /**
  * @ApiResponse 데코레이터에 사용되는 응답 전용 DTO
@@ -31,4 +32,8 @@ export class PostResponseDto {
     format: 'date-time' 
   })
   updatedAt: Date;
+  
+  constructor(model: IPost) { 
+        Object.assign(this, model); // 변환 로직은 DTO가 스스로 처리
+    }
 }
