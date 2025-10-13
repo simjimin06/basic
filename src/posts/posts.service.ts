@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PostsRepository } from './posts.repository/posts.repository';
-import { Post as IPost } from './interfaces/post.interface'; 
+import { Post as IPost } from '@prisma/client';  
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostResponseDto } from './dto/response-post.dto';
@@ -9,6 +9,19 @@ import { PostResponseDto } from './dto/response-post.dto';
 export class PostsService {
   // PostsRepository를 주입받음.
     constructor(private readonly postsRepository: PostsRepository) {}v
+    
+
+  // [C] Create
+    async create(createPostDto: CreatePostDto): Promise<IPost> {
+         const newPost = await this.postsRepository.create(createPostDto);
+        // Prisma 모델을 그대로 반환
+         return newPost as IPost; 
+    }
+
+
+  // [R] Read - 게시글 ID로 단일 조회 (NotFoundException 처리)
+    async findOneById(id: string): Promise<IPost> { 
+
 
     /**
      * [추가] Prisma Post 모델을 PostResponseDto로 변환하는 헬퍼 함수
@@ -32,11 +45,30 @@ export class PostsService {
 
   // [R] Read - 게시글 ID로 단일 조회 (NotFoundException 처리)
     async findOneById(id: string): Promise<PostResponseDto> { 
+
         // findOneById는 DB에서 id를 숫자로 다루기 때문에 Number()로 변환됨.
         const post = await this.postsRepository.findOneById(Number(id));
         if (!post) {
             throw new NotFoundException(`ID가 ${id}인 게시글을 찾을 수 없습니다.`);
         }
+        return post as IPost;
+    }
+
+     // [R] Read - 작성자 ID로 목록 조회
+    async findAllByAuthorId(authorId: string): Promise<IPost[]> {
+        const posts = await this.postsRepository.findAllByAuthorId(authorId);
+       // Prisma 모델을 그대로 반환
+        return posts as IPost[];
+    }
+
+
+
+    // [R] Read - 전체 조회
+    async findAll(): Promise<IPost[]> {
+        const posts = await this.postsRepository.findAll();
+       // Prisma 모델을 그대로 반환
+        return posts as IPost[];
+    }
         // + 조회된 Post 모델을 DTO로 변환하여 반환
         return this.mapToDto(post);
     }
@@ -57,16 +89,21 @@ export class PostsService {
     }
 
 
+
      // [U] Update - 게시글 수정
     async update(id: string, updatePostDto: UpdatePostDto): Promise<PostResponseDto> {
         // 수정 전 해당 ID의 게시글이 있는지 확인 (에러 핸들링*)
         await this.findOneById(id); 
 
         const updatedPost = await this.postsRepository.update(Number(id), updatePostDto);
+        // Prisma 모델을 그대로 반환
+        return updatedPost as IPost;
+    }
         // + 수정된 Post 모델을 DTO로 변환하여 반환
         return this.mapToDto(updatedPost);
     }
 
+    
     // [D] Delete - 게시글 삭제
     async delete(id: string): Promise<{ message: string }> {
         // 삭제 전 해당 ID의 게시글이 있는지 확인
