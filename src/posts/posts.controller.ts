@@ -39,7 +39,7 @@ export class PostsController {
     @Get(':id')
     @ApiOkResponse({ description: '단일 게시글 조회 성공', type: PostResponseDto }) 
     @ApiResponse({ status: 404, description: '게시글 없음' })
-    async findOneById(@Param() params: PostIdParam): Promise<PrismaPost> 
+    async findOneById(@Param() params: PostIdParam): Promise<PrismaPost>{ 
         // await 추가
         return await this.postsService.findOneById(params.id);
     }
