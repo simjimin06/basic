@@ -1,13 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Post as IPost } from '@prisma/client'; 
-
+import { Post as IPost } from '@prisma/client;
 /**
  * @ApiResponse 데코레이터에 사용되는 응답 전용 DTO
  * DB에서 조회된 Post 모델의 필드를 클라이언트에게 반환할 구조를 정의함.
  */
 
 export class PostResponseDto {
-    
   @ApiProperty({ description: '게시글 ID (Int)', example: 1 })
   id: number; // Prisma Int 타입은 TypeScript에서 number로 변환됨.
 

@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const logger = new Logger('Bootstrap');
 
   // DTO 유효성 검사 Pipe를 전역으로 적용. (과제 조건*)
   app.useGlobalPipes(
@@ -26,8 +28,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document); // http://localhost:3000/api 에서 접근 가능!
 
   await app.listen(3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
-  console.log(`Swagger documentation available at: ${await app.getUrl()}/api`);
+  logger.log(`Application is running on: ${await app.getUrl()}`);
+  logger.log(`Swagger documentation available at: ${await app.getUrl()}/api`);
 }
   
 bootstrap();

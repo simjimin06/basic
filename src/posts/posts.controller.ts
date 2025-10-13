@@ -39,7 +39,7 @@ export class PostsController {
     @Get(':id')
     @ApiOkResponse({ description: '단일 게시글 조회 성공', type: PostResponseDto }) 
     @ApiResponse({ status: 404, description: '게시글 없음' })
-    async findOneById(@Param() params: PostIdParam): Promise<PrismaPost> {
+    async findOneById(@Param() params: PostIdParam): Promise<PrismaPost> 
         // await 추가
         return await this.postsService.findOneById(params.id);
     }
@@ -47,6 +47,7 @@ export class PostsController {
     @Get('by-author/:authorId')
     @ApiOkResponse({ description: '작성자별 게시글 목록 조회 성공', type: [PostResponseDto] }) 
     async findAllByAuthorId(@Param() params: AuthorIdParam): Promise<PrismaPost[]> {
+
         return await this.postsService.findAllByAuthorId(params.authorId);
     }
 
@@ -57,6 +58,7 @@ export class PostsController {
         @Param() params: PostIdParam, 
         @Body() updatePostDto: UpdatePostDto,
     ): Promise<PrismaPost> {
+
         if (Object.keys(updatePostDto).length === 0) { 
             throw new NotFoundException('수정할 내용(제목 또는 내용)을 제공해야 함.'); 
         }
