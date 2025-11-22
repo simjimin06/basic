@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
 import { AuthDto } from './dto/auth.dto';
 
 // Passport Local Guard import
-import { LocalAuthGuard } from '../guards/local-auth.guard'; 
+import { LocalAuthGuard } from './guards/local-auth.guard'; 
 import { UseGuards } from '@nestjs/common';
 
 @Controller('auth')
