@@ -9,6 +9,8 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { PostIdParam, AuthorIdParam } from './dto/params-post.dto';
 import { ApiResponse, ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger'; 
 import { PostResponseDto } from './dto/response-post.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OwnerAuthGuard } from './guards/owner-auth.guard';
 
 // 모든 메서드의 반환값을 자동으로 PostResponseDto 형태로 변환
 @UseInterceptors(ClassSerializerInterceptor) 
@@ -22,11 +24,16 @@ import { PostResponseDto } from './dto/response-post.dto';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  @Post()
+    @Post()
+    @UseGuards(JwtAuthGuard)
     @ApiCreatedResponse({description: '게시글 생성 성공', type: PostResponseDto })
-    async createPost(@Body() createPostDto: CreatePostDto): Promise<PrismaPost> {
+    async createPost(
+        @Body() createPostDto: CreatePostDto,
+        @Req() req
+): Promise<PrismaPost> {
         // Service 호출 앞에 await 추가 및 Controller 함수를 async로 선언
-        return await this.postsService.create(createPostDto);
+        const authorId = req.user.id;
+        return await this.postsService.create(createPostDto,authorId);
     }
     
     @Get()
@@ -52,6 +59,7 @@ export class PostsController {
     }
 
     @Patch(':id')
+    @UseGuards(JwtAuthGuard, OwnerAuthGuard)
     @ApiOkResponse({ description: '게시글 수정 성공', type: PostResponseDto }) 
     @ApiResponse({ status: 404, description: '게시글 없음' })
     async update(
@@ -67,6 +75,7 @@ export class PostsController {
     }
     
     @Delete(':id')
+    @UseGuards(JwtAuthGuard, OwnerAuthGuard)
     // 삭제 성공 시 반환되는 객체의 구조를 명시 (삭제 메시지)
     @ApiOkResponse({ 
       description: '게시글 삭제 성공', 

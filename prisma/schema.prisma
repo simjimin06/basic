@@ -2,6 +2,8 @@ generator client {
   provider = "prisma-client-js"
 }
 
+//데이터베이스에 어떤 테이블과 칼럼이 있는지 정의 
+
 // PostgreSql 연결
 datasource db {
   provider = "postgresql"
@@ -28,3 +30,25 @@ model Post {
   // updatedAt: 업데이트 시간 (수정 시각으로 자동 업데이트)
   updatedAt DateTime @updatedAt
 }
+
+//사용자 모델 정의
+
+model User {
+  // id: 기본 키
+  id        Int      @id @default(autoincrement())
+
+  // userId: 사용자 로그인 ID (고유해야 함)
+  userId    String   @unique
+
+  // name: 사용자 이름
+  name      String
+
+  // password: bcrypt로 암호화된 비밀번호 해시
+  password  String
+
+  // createdAt, updatedAt: 생성 및 수정 시간 기록
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
