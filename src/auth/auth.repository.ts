@@ -29,4 +29,16 @@ export class AuthRepository {
     });
     return newUser as User;
   }
+
+  async findUserByJwtPayload(userId: string): Promise<any> {
+  // AuthRepository의 findUserById 메서드를 호출합니다.
+    const user = await this.findUserById(userId);
+    if (!user) {
+      return null;
+  }
+  // 비밀번호만 제외하고 나머지 정보(id, userId, name 등)를 반환합니다.
+    const { password, ...result } = user;
+    return result;
+}
+  
 }

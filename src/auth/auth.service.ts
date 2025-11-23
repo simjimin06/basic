@@ -12,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // [C] 회원가입 로직
+  // 회원가입 로직
   async register(authDto: AuthDto) {
     // 1. 이미 존재하는 사용자인지 Repository를 통해 확인
     const existingUser = await this.authRepository.findUserById(authDto.userId);
@@ -21,38 +21,47 @@ export class AuthService {
       throw new ConflictException('이미 존재하는 사용자 ID입니다.');
     }
 
-    // 2. 비밀번호 암호화 (Salt round: 10)
+    // 비밀번호 암호화 (Salt round: 10)
     const hashedPassword = await bcrypt.hash(authDto.password, 10);
 
-    // 3. 사용자 생성 및 저장 (Repository에 위임)
+    // 사용자 생성 및 저장 (Repository에 위임)
     const newUser = await this.authRepository.createUser({
       userId: authDto.userId,
       name: authDto.userId, // 이름은 임시로 userId와 동일하게 설정
       password: hashedPassword,
     });
 
-    // 4. 비밀번호를 제외한 사용자 정보 반환
-    // JavaScript의 구조 분해 할당을 이용해 password 필드를 분리
+    // 비밀번호를 제외한 사용자 정보 반환
     const { password, ...result } = newUser;
     return result;
   }
   
-  // 향후 JWT 로그인 로직이 여기에 추가됩니다.
+
+  //로그인 로직
+
+
+  // JWT 
   // Validate user credentials used by LocalStrategy
-  async validateUser(userId: string, password: string): Promise<any> {
+  async findUserById(userId: string): Promise<any> {
     const user = await this.authRepository.findUserById(userId);
     if (!user) return null;
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return null;
 
     const { password: _pw, ...result } = user;
     return result;
   }
 
+  async validateUser(userId: string, password: string): Promise<any> {
+    const user = await this.authRepository.findUserById(userId);
+    if (!user) return null;
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return null;
+    const { password: _pw, ...result } = user;
+    return result;
+  }
+
   // Create JWT for authenticated user
-  async login(user: any) {
-    const payload = { userId: user.userId, sub: user.id };
+  async login(user: AuthDto) {
+    const payload = { userId: user.userId};
     return { access_token: this.jwtService.sign(payload) };
   }
 }

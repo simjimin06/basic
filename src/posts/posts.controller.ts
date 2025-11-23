@@ -1,26 +1,26 @@
 import { Controller, Post, Get, Patch, Delete,
     Body, Param, UsePipes, ValidationPipe, NotFoundException, 
-    UseInterceptors, ClassSerializerInterceptor 
+    UseInterceptors, ClassSerializerInterceptor, UseGuards, Req
  } from '@nestjs/common';
 import {PostsService} from './posts.service';
 import { Post as PrismaPost } from '@prisma/client'; 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { PostIdParam, AuthorIdParam } from './dto/params-post.dto';
-import { ApiResponse, ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger'; 
+import { ApiResponse, ApiTags, ApiOkResponse, ApiCreatedResponse, ApiBearerAuth } from '@nestjs/swagger'; 
 import { PostResponseDto } from './dto/response-post.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OwnerAuthGuard } from './guards/owner-auth.guard';
+import { RequestWithUser } from '../auth/interfaces/request-with-user.interface';
 
 // 모든 메서드의 반환값을 자동으로 PostResponseDto 형태로 변환
 @UseInterceptors(ClassSerializerInterceptor) 
 
 //swagger ui에서 그룹핑하기 위한 태그 설정
 @ApiTags('posts') 
+@ApiBearerAuth('user:jwt') // JWT 인증 사용 명시
 @UsePipes(new ValidationPipe({ transform: true }))
-
 @Controller('posts')
-
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
@@ -29,11 +29,11 @@ export class PostsController {
     @ApiCreatedResponse({description: '게시글 생성 성공', type: PostResponseDto })
     async createPost(
         @Body() createPostDto: CreatePostDto,
-        @Req() req
+        @Req() req:RequestWithUser
 ): Promise<PrismaPost> {
         // Service 호출 앞에 await 추가 및 Controller 함수를 async로 선언
-        const authorId = req.user.id;
-        return await this.postsService.create(createPostDto,authorId);
+        const authorId = req.user.userId;
+        return await this.postsService.create(createPostDto, authorId);
     }
     
     @Get()

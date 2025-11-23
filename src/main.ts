@@ -22,7 +22,9 @@ async function bootstrap() {
     .setTitle('NestJS 게시판 API')
     .setDescription('Postgres DB와 Prisma를 사용한 게시판 CRUD API 명세서입니다.')
     .setVersion('1.0')
-    .addTag('posts')
+    .addBearerAuth({
+      type: 'http', scheme: 'bearer',
+    }, 'user:jwt')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // http://localhost:3000/api 에서 접근 가능!

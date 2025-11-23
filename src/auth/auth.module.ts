@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth/auth.service';
-import { AuthController } from './auth/auth.controller';
-import { AuthRepository } from './auth.repository/auth.repository';
-import { PrismaModule } from '../prisma/prisma.module'; 
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { AuthRepository } from './auth.repository';
+import { PrismaModule } from '../../prisma/prisma.module'; 
 import { PassportModule } from '@nestjs/passport'; 
 import { JwtModule } from '@nestjs/jwt'; 
-import { LocalStrategy } from './auth/strategies/local.strategy'; 
-import { JwtStrategy } from './auth/strategies/jwt.strategy'; // JwtStrategy import (다음 단계에서 구현)
+import { LocalStrategy } from './strategies/local.strategy'; 
+import { JwtStrategy } from './strategies/jwt.strategy'; // JwtStrategy import (다음 단계에서 구현)
 
 @Module({
   imports: [

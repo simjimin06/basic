@@ -12,10 +12,10 @@ export class PostsService {
     
 
   // [C] Create
-    async create(createPostDto: CreatePostDto): Promise<IPost> {
-         const newPost = await this.postsRepository.create(createPostDto);
-        // Prisma 모델을 그대로 반환
-         return newPost as IPost; 
+    async create(createPostDto: CreatePostDto, authorId: string): Promise<IPost> {
+        const newPost = await this.postsRepository.create(createPostDto, authorId);
+
+        return newPost as IPost; 
     }
 
 
@@ -42,7 +42,7 @@ export class PostsService {
     async findAll(): Promise<PostResponseDto[]> {
         const posts = await this.postsRepository.findAll();
         // + 조회된 Post 모델 배열을 DTO 배열로 변환
-        return posts as IPost[];
+        return posts as any as PostResponseDto[];
     }
 
 
@@ -52,7 +52,7 @@ export class PostsService {
         await this.findOneById(id); 
         const updatedPost = await this.postsRepository.update(Number(id), updatePostDto);
         // Prisma 모델을 그대로 반환
-        return updatedPost as IPost;
+        return updatedPost as IPost as PostResponseDto;
     }
     
     // [D] Delete - 게시글 삭제

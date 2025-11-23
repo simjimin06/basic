@@ -13,10 +13,10 @@ export class PostsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   // [C] Create - 새로운 게시글 생성 (DB에 삽입)
-  async create(createPostDto: CreatePostDto): Promise<Post> {
+  async create(createPostDto: CreatePostDto, authorId: string): Promise<Post> {
     const newPost = await this.prisma.post.create({
       data: {
-        authorId: createPostDto.authorId,
+        authorId,
         title: createPostDto.title,
         content: createPostDto.content,
       },
