@@ -1,36 +1,35 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { AuthRepository } from './auth.repository';
-import { PrismaModule } from '../../prisma/prisma.module'; 
-import { PassportModule } from '@nestjs/passport'; 
-import { JwtModule } from '@nestjs/jwt'; 
-import { LocalStrategy } from './strategies/local.strategy'; 
-import { JwtStrategy } from './strategies/jwt.strategy'; // JwtStrategy import (다음 단계에서 구현)
+import { HttpModule } from '@nestjs/axios'; 
+import { PassportModule } from '@nestjs/passport';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt'; // 1. JwtModule 추가
+import { InfoteamStrategy } from './strategies/infoteam.strategy'; 
+import { AuthService } from './auth.service'; 
+import { AuthController } from './auth.controller'; 
+import { AuthRepository } from './auth.repository'; 
+import { PrismaService } from '../../prisma/prisma.service'; 
 
 @Module({
   imports: [
-    
-    // 중요* Passport 설정: JWT를 기본 인증 전략으로 지정
-    PassportModule.register({ defaultStrategy: 'jwt' }), 
-    
-    // JWT 설정: 토큰 서명에 필요한 비밀키와 만료 시간을 설정
+    ConfigModule,
+    HttpModule,
+    PassportModule.register({ defaultStrategy: 'infoteam' }),
+    // 2. JWT 설정 추가 (토큰을 만들 때 쓸 암호와 만료 시간 설정)
     JwtModule.register({
-      secret: 'MY_JWT_SECRET_KEY', 
-      signOptions: { expiresIn: '60m' }, // 토큰 만료 시간: 60분
+      secret: 'secretKey', // 실제 서비스에선 .env에 넣어야 하지만 일단 테스트용!
+      signOptions: { expiresIn: '1h' },
     }),
   ],
   controllers: [AuthController],
-  // Strategy와 Guard는 모두 Provider로 등록해야 합니다.
   providers: [
-    AuthService, 
-    AuthRepository, 
-    LocalStrategy,
-    JwtStrategy  
+    InfoteamStrategy, 
+    PrismaService,
+    AuthService,
+    AuthRepository,
   ],
-  // PostsModule 등 다른 모듈에서 JWT 인증된 사용자 정보를 사용하기 위해 export.
-  exports: [AuthService, JwtModule, PassportModule],
+  exports: [PassportModule, AuthService],
 })
 export class AuthModule {}
 
-//prismaModule (@Global()을 사용했으므로 imports에서 제거함.)
+
+

@@ -1,39 +1,45 @@
-// src/auth/auth.controller.ts
-
-import { Body, Controller, Post, UsePipes, ValidationPipe, Request, HttpCode } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Controller, Get, Post, UseGuards, Request, Res, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { AuthDto } from './dto/auth.dto';
+import { Response } from 'express'; // express에서 직접 import
 
-// Passport Local Guard import
-import { LocalAuthGuard } from './guards/local-auth.guard'; 
-import { UseGuards } from '@nestjs/common';
-
-@Controller('auth')
 @ApiTags('auth')
-@UsePipes(new ValidationPipe({ transform: true }))
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // POST /auth/register - 회원가입 API
-  @Post('register')
-  @ApiResponse({ status: 201, description: '회원가입 성공', type: Object })
-  @ApiResponse({ status: 409, description: '이미 존재하는 사용자 ID' })
-  async register(@Body() authDto: AuthDto) {
-    return await this.authService.register(authDto);
+  /**
+   * 1. IDP 로그인 확인 (과제의 "로그인" 기능)
+   * Postman에서 Bearer 토큰을 헤더에 담아 호출하면 
+   * Strategy가 IDP에 물어보고 우리 DB에 유저를 저장한 뒤 정보를 반환합니다.
+   */
+  @ApiOperation({ summary: 'IDP 로그인 상태 확인 및 유저 저장' })
+  @ApiResponse({ status: 200, description: '로그인 성공 및 DB 저장 완료' })
+  @Get('profile')
+  @UseGuards(AuthGuard('infoteam')) // 우리가 만든 'infoteam' 전략 사용
+  async getProfile(@Request() req: any) {
+    // Strategy의 validate()가 반환한 유저 정보가 req.user에 들어있습니다.
+    return {
+      message: 'IDP 인증 및 유저 정보 저장 성공',
+      user: req.user,
+    };
   }
 
-  // POST /auth/login - 로그인 API (Basic 인증)
-  // HTTP 상태 코드 = 200 OK
-  @HttpCode(200) 
-  @Post('login')
-  @UseGuards(LocalAuthGuard) // LocalAuthGuard를 사용하여 사용자 인증 (Passport 권장 조건)
-  @ApiBody({ type: AuthDto, description: '로그인에 필요한 사용자 ID와 비밀번호' }) // Swagger Body 명시
-  @ApiResponse({ status: 200, description: '로그인 성공 및 JWT 토큰 발급' })
-  async login(@Request() req: any) {
-    // Passport LocalStrategy를 통과하면 req.user에 사용자 정보가 담깁니다.
-    // 이 정보를 사용하여 JWT 토큰을 발급하는 로직을 AuthService에서 처리합니다.
-    return this.authService.login(req.user);
+  /**
+   * 2. 로그아웃 (과제 조건)
+   * 토큰 인증 방식은 서버에 세션이 없으므로, 클라이언트가 토큰을 삭제하면 됩니다.
+   * 과제 요건을 위해 로그아웃 성공 메시지만 반환합니다.
+   */
+  @ApiOperation({ summary: '로그아웃' })
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout() {
+    return { 
+      message: '성공적으로 로그아웃 되었습니다. (브라우저/Postman의 토큰을 제거하세요)' 
+    };
   }
 }
+  
+
+

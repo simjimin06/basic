@@ -1,40 +1,37 @@
-// src/posts/posts.repository.ts
-
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service'; // Prisma DB 연결 서비스
-import { Post } from './interfaces/post.interface'; // Post 타입
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+// Prisma에서 생성해준 Post 타입을 직접 쓰면 인터페이스 관리가 훨씬 편해요!
+import { Post } from '@prisma/client'; 
 
-// Repository 계층은 DB와의 모든 통신을 전담
 @Injectable()
 export class PostsRepository {
-  // PrismaService를 주입받아 DB 쿼리를 실행
   constructor(private readonly prisma: PrismaService) {}
 
-  // [C] Create - 새로운 게시글 생성 (DB에 삽입)
+  // [C] Create - 카테고리 ID를 반드시 포함해야 합니다.
   async create(createPostDto: CreatePostDto, authorId: string): Promise<Post> {
-    const newPost = await this.prisma.post.create({
+    return await this.prisma.post.create({
       data: {
-        authorId,
         title: createPostDto.title,
         content: createPostDto.content,
+        authorId: authorId,
+        // 핵심: DTO에서 넘어온 categoryId를 DB에 넣어줍니다.
+        categoryId: createPostDto.categoryId, 
       },
     });
-    return newPost;
   }
 
   // [R] Read - 게시글 ID로 단일 조회
   async findOneById(id: number): Promise<Post | null> {
-    // findUnique는 PK(id)로 찾는 가장 효율적인 쿼리라고는 함.
     return this.prisma.post.findUnique({
       where: { id: id },
+      include: { category: true } // 카테고리 정보도 같이 보고 싶다면 추가
     });
   }
 
   // [R] Read - 작성자 ID로 목록 조회
   async findAllByAuthorId(authorId: string): Promise<Post[]> {
-    // findMany는 여러 결과를 찾을 때 사용한다고 함.
     return this.prisma.post.findMany({
       where: { authorId: authorId },
     });
@@ -42,26 +39,28 @@ export class PostsRepository {
 
   // [R] Read - 전체 조회
   async findAll(): Promise<Post[]> {
-    return this.prisma.post.findMany();
+    return this.prisma.post.findMany({
+      include: { category: true } // 어느 카테고리 글인지 같이 가져옵니다.
+    });
   }
 
   // [U] Update - 게시글 수정
   async update(id: number, updatePostDto: UpdatePostDto): Promise<Post> {
-    // update는 수정할 데이터(data)와 조건을 함께 전달한다.
-    const updatedPost = await this.prisma.post.update({
+    return await this.prisma.post.update({
       where: { id: id },
-      data: updatePostDto,
+      data: {
+        title: updatePostDto.title,
+        content: updatePostDto.content,
+        // 수정 시에도 카테고리를 바꿀 수 있다면 추가하세요.
+        categoryId: updatePostDto.categoryId, 
+      },
     });
-    return updatedPost;
   }
 
   // [D] Delete - 게시글 삭제
   async delete(id: number): Promise<void> {
-    // delete는 조건(where)을 만족하는 하나의 레코드를 삭제한다고 함.(이 부분 좀 더 공부)
     await this.prisma.post.delete({
       where: { id: id },
     });
   }
 }
-
-//이 파일 중요**, DB와 직접 통신하는 부분. service에서 repository로 역할을 분담한 것임.

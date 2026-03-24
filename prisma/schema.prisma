@@ -11,44 +11,67 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 게시글(Post) 모델 정의(post.service.ts에 있던 json 더미들)
+
+//1. 사용자 모델
+
+model User {
+  // id: 기본 키
+  id        String      @id @default(uuid())
+
+  // IDP (/oauth/userInfo)를 통해 가져오는 정보 저장*
+  sub           String         @unique // IDP에서 제공하는 유저 고유 식별자
+  name          String
+  email         String         @unique
+  createdAt     DateTime       @default(now())
+
+  // 관계 설정
+  posts         Post[]         // 사용자가 작성한 게시글
+  subscriptions Subscription[] // 사용자가 구독한 카테고리
+ 
+}
+
+// 2. 카테고리 모델 (announcement, qna, misc)
+model Category {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique // announcement, qnq, misc
+  
+  posts       Post[]         // 이 카테고리에 속한 게시글들
+  subscribers Subscription[] // 이 카테고리를 구독하는 유저들
+}
+
+
+// 3. 게시글(Post) 모델
 
 model Post {
   // id: 기본 키 (Primary Key), 데이터베이스에서 자동으로 1씩 증가
   id        Int      @id @default(autoincrement())
+  title      String
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
   
-  // authorId: 작성자 ID (간단한 문자열 사용)
-  authorId  String
-  
-  // title, content: 게시글 제목과 내용
-  title     String
-  content   String
-  
-  // createdAt: 생성 시간 (현재 시각으로 자동 기록)
-  createdAt DateTime @default(now())
-  
-  // updatedAt: 업데이트 시간 (수정 시각으로 자동 업데이트)
-  updatedAt DateTime @updatedAt
+  // 작성자 관계 (User의 UUID와 연결)
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
+
+  // 카테고리 관계 
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
 }
 
-//사용자 모델 정의
+// 4. 구독 모델 (User <-> Category N:M 관계)
+model Subscription {
+  id         Int      @id @default(autoincrement())
+  createdAt  DateTime @default(now())
 
-model User {
-  // id: 기본 키
-  id        Int      @id @default(autoincrement())
+  // 유저가 삭제되면 구독 정보도 함께 삭제됨
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
 
-  // userId: 사용자 로그인 ID (고유해야 함)
-  userId    String   @unique
+  // 카테고리가 삭제되면 구독 정보도 함께 삭제됨
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int
 
-  // name: 사용자 이름
-  name      String
-
-  // password: bcrypt로 암호화된 비밀번호 해시
-  password  String
-
-  // createdAt, updatedAt: 생성 및 수정 시간 기록
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // 한 유저가 같은 카테고리를 중복 구독할 수 없도록 유니크 설정
+  @@unique([userId, categoryId])
 }
-
-

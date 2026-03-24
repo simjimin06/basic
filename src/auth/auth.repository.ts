@@ -2,12 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 type User = {
-  id: number;
-  userId: string;
+  id: string; // uuid
+  sub: string;
   name: string;
-  password: string;
+  email: string;
   createdAt: Date;
-  updatedAt: Date;
 };
 
 @Injectable()
@@ -15,30 +14,33 @@ export class AuthRepository {
 
     constructor(private readonly prisma: PrismaService) {}
 
-  // 사용자 ID로 사용자 조회 (로그인 시 사용)
-  async findUserById(userId: string): Promise<User | null> {
+  // 2. sub(IDP 고유값)로 사용자 조회
+  async findUserBySub(sub: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { userId: userId },
+      where: { sub: sub },
     }) as Promise<User | null>;
   }
 
-  // 사용자 생성 (회원가입 시 사용)
-  async createUser(data: { userId: string, name: string, password: string }): Promise<User> {
+  // 3. 사용자 생성 (IDP 정보를 바탕으로 저장)
+  async createUser(data: { sub: string; name: string; email: string }): Promise<User> {
     const newUser = await this.prisma.user.create({
-      data: data,
+      data: {
+        sub: data.sub,
+        name: data.name,
+        email: data.email,
+      },
     });
     return newUser as User;
   }
 
-  async findUserByJwtPayload(userId: string): Promise<any> {
-  // AuthRepository의 findUserById 메서드를 호출합니다.
-    const user = await this.findUserById(userId);
+  // 4. 인증용 사용자 조회 (비밀번호 로직 제거)
+  async findUserForAuth(sub: string): Promise<any> {
+    const user = await this.findUserBySub(sub);
     if (!user) {
       return null;
+    }
+    // 이제 password가 없으므로 비밀번호 제외 로직 없이 바로 반환하거나, 
+    // 필요한 필드만 골라낼 수 있음!
+    return user;
   }
-  // 비밀번호만 제외하고 나머지 정보(id, userId, name 등)를 반환합니다.
-    const { password, ...result } = user;
-    return result;
-}
-  
 }
