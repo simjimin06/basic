@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-// Prisma에서 생성해준 Post 타입을 직접 쓰면 인터페이스 관리가 훨씬 편해요!
+// Prisma에서 생성해준 Post 타입을 직접 쓰면 인터페이스 관리가 훨씬 편하대..
 import { Post } from '@prisma/client'; 
 
 @Injectable()

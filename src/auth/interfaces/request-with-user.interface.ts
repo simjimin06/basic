@@ -1,9 +1,10 @@
 // JwtStrategy에서 토큰 검증 후 req.user에 주입될 사용자 정보의 타입입니다.
 // 이는 AuthRepository의 User 타입에서 password만 제외한 형태와 일치해야 합니다.
 export interface JwtUserPayload {
-  id: number;      // DB Primary Key (Int)
-  userId: string;  // 로그인 ID (String)
+  id: string;      // DB Primary Key (Int)
+  email: string;  // 로그인 ID (String)
   name: string;
+  sub:string;
   createdAt: Date;
   updatedAt: Date;
 }

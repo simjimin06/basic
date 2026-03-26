@@ -27,7 +27,7 @@ import { PrismaService } from '../../prisma/prisma.service';
     AuthService,
     AuthRepository,
   ],
-  exports: [PassportModule, AuthService],
+  exports: [PassportModule, AuthService, InfoteamStrategy],
 })
 export class AuthModule {}
 

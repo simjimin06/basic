@@ -32,7 +32,7 @@ export class PostsController {
         @Req() req:RequestWithUser
 ): Promise<PrismaPost> {
         // Service 호출 앞에 await 추가 및 Controller 함수를 async로 선언
-        const authorId = req.user.userId;
+        const authorId = req.user.id;
         return await this.postsService.create(createPostDto, authorId);
     }
     
