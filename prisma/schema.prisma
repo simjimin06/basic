@@ -18,7 +18,7 @@ model User {
   // id: 기본 키
   id        String      @id @default(uuid())
 
-  // IDP (/oauth/userInfo)를 통해 가져오는 정보 저장*
+  // IDP (/oauth/userInfo)를 통해 가져오는 정보 저장
   sub           String         @unique // IDP에서 제공하는 유저 고유 식별자
   name          String
   email         String         @unique
@@ -33,8 +33,9 @@ model User {
 // 2. 카테고리 모델 (announcement, qna, misc)
 model Category {
   id          Int            @id @default(autoincrement())
-  name        String         @unique // announcement, qnq, misc
-  
+  name        String         @unique   // announcement, qnq, misc
+  // (기본값은 true: 살아있음)
+  status      Boolean        @default(true) //soft delete
   posts       Post[]         // 이 카테고리에 속한 게시글들
   subscribers Subscription[] // 이 카테고리를 구독하는 유저들
 }
@@ -61,17 +62,14 @@ model Post {
 
 // 4. 구독 모델 (User <-> Category N:M 관계)
 model Subscription {
-  id         Int      @id @default(autoincrement())
   createdAt  DateTime @default(now())
 
-  // 유저가 삭제되면 구독 정보도 함께 삭제됨
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id])
   userId     String
 
-  // 카테고리가 삭제되면 구독 정보도 함께 삭제됨
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id])
   categoryId Int
 
   // 한 유저가 같은 카테고리를 중복 구독할 수 없도록 유니크 설정
-  @@unique([userId, categoryId])
+  @@id([userId, categoryId])
 }

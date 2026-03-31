@@ -1,0 +1,17 @@
+/*
+  Warnings:
+
+  - The primary key for the `Subscription` table will be changed. If it partially fails, the table could be left without primary key constraint.
+  - You are about to drop the column `id` on the `Subscription` table. All the data in the column will be lost.
+
+*/
+-- DropIndex
+DROP INDEX "public"."Subscription_userId_categoryId_key";
+
+-- AlterTable
+ALTER TABLE "Category" ADD COLUMN     "status" BOOLEAN NOT NULL DEFAULT true;
+
+-- AlterTable
+ALTER TABLE "Subscription" DROP CONSTRAINT "Subscription_pkey",
+DROP COLUMN "id",
+ADD CONSTRAINT "Subscription_pkey" PRIMARY KEY ("userId", "categoryId");

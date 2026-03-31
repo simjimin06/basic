@@ -16,7 +16,7 @@ export class PostsRepository {
         title: createPostDto.title,
         content: createPostDto.content,
         authorId: authorId,
-        // 핵심: DTO에서 넘어온 categoryId를 DB에 넣어줍니다.
+        // 핵심: DTO에서 넘어온 categoryId를 DB에 넣어준다.
         categoryId: createPostDto.categoryId, 
       },
     });
@@ -40,7 +40,7 @@ export class PostsRepository {
   // [R] Read - 전체 조회
   async findAll(): Promise<Post[]> {
     return this.prisma.post.findMany({
-      include: { category: true } // 어느 카테고리 글인지 같이 가져옵니다.
+      include: { category: true } // 어느 카테고리 글인지 같이 가져온다.
     });
   }
 
@@ -51,7 +51,7 @@ export class PostsRepository {
       data: {
         title: updatePostDto.title,
         content: updatePostDto.content,
-        // 수정 시에도 카테고리를 바꿀 수 있다면 추가하세요.
+        // 수정 시에도 카테고리를 바꿀 수 있다면 추가하기
         categoryId: updatePostDto.categoryId, 
       },
     });

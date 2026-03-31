@@ -21,10 +21,10 @@ export class InfoteamStrategy extends PassportStrategy(Strategy, 'infoteam') {
 
       console.log('2. [IDP 응답 데이터]:', response.data);
 
-      // 💡 [수정 포인트] IDP가 주는 실제 필드명(student_id)에 맞게 가져옵니다.
+      // IDP가 주는 실제 필드명(student_id)에 맞게 가져오는 중
       const { sub, email, student_id } = response.data;
 
-      // 이름(name)이 없으므로, 학번을 우선 사용하고 없으면 이메일 앞자리를 씁니다.
+      // 이름(name)이 없으므로, 학번을 우선 사용하고 없으면 이메일 앞자리를 이름으로 사용하도록 함. 
       const userName = student_id || (email ? email.split('@')[0] : 'Gistory유저');
 
       console.log('3. [최종 유저 정보] sub:', sub, '이름으로 쓸 값:', userName);
@@ -33,7 +33,6 @@ export class InfoteamStrategy extends PassportStrategy(Strategy, 'infoteam') {
         throw new UnauthorizedException('sub 정보가 없습니다.');
       }
 
-      // 이제 userName이 절대 undefined가 아니므로 Prisma가 에러를 내지 않습니다.
       const user = await this.prisma.user.upsert({
         where: { sub: sub },
         update: { 

@@ -14,7 +14,7 @@ export class CreatePostDto {
   @MinLength(10, { message: '내용은 최소 10자 이상이어야 합니다.' })
   content: string;
 
-  // 💡 추가된 부분: 어떤 카테고리에 글을 올릴지 결정하는 번호 (1: 공지, 2: Q&A 등)
+  //어떤 카테고리에 글을 올릴지 결정하는 번호 (1: 공지, 2: Q&A 등)
   @ApiProperty({ example: 1, description: '카테고리 ID 번호' })
   @IsNotEmpty({ message: '카테고리 ID는 필수입니다.' })
   @IsNumber({}, { message: '카테고리 ID는 숫자여야 합니다.' })

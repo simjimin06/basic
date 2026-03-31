@@ -1,0 +1,55 @@
+services:
+  # 1. NestJS 게시판 서버
+  server:
+    build:
+      context: .
+    container_name: my-board-api
+    depends_on:
+      - db #db가 먼저 실행되고 push server가 실행되는 조건 
+      - fake-push
+
+    environment:
+      - NODE_ENV=production
+      # localhost 대신 'db'(서비스 이름)를 사용함. 
+      - DATABASE_URL=postgresql://jimin:password@db:5432/mydb
+    ports:
+      - "3000:3000"
+    networks:
+      - board-network
+
+  # 2. 알림 서버 (Fake Push Server)
+  fake-push:
+    image: yeonhyukkim/fake-push-server:latest
+    container_name: fake-push
+    #ports:
+     # - "8090:8090" //port forwarding을 하지 않아야 함!
+    networks:
+      board-network:
+        aliases:
+          - push-service # 이 곳에서 불릴 별명(Alias)
+          
+  # 3. PostgreSQL 데이터베이스
+  db:
+    image: postgres:16
+    container_name: nestjs-postgres
+    environment:
+      - POSTGRES_USER=jimin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydb
+    ports:
+      - "5435:5432"
+    networks:
+      board-network:  
+        aliases:
+          - db # 이 곳에서 불릴 별명(Alias)
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+# 브릿지 네트워크 정의
+networks:
+  board-network:
+    driver: bridge
+volumes:
+  postgres-data:
+

@@ -30,7 +30,7 @@ export class PostsService {
       select: { userId: true },
     });
 
-    // 3. 비동기로 알림 발송 (await를 쓰지 않아 즉시 반환됩니다!)
+    // 3. 비동기로 알림 발송 (await를 쓰지 않아 즉시 반환됨)
     if (subscribers.length > 0) {
       this.sendNotifications(subscribers, newPost.title);
     }
@@ -45,11 +45,11 @@ export class PostsService {
       .pipe(
         mergeMap((sub) => {
           const deviceId = uuid();
-          const url = 'http://localhost:8090/api/push'; // Docker 알림 서버 주소
+          const url = 'http://push-service:8090/api/push'; // Docker 알림 서버 주소
 
           return this.httpService.post(url, { deviceId }).pipe(
             map((res) => {
-              // 과제 조건: resultCode가 -1이면 에러로 간주
+              // resultCode가 -1이면 에러로 간주
               if (res.data.resultCode === -1) {
                 throw new Error('Push Server Error (-1)');
               }

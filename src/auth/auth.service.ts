@@ -11,10 +11,10 @@ export class AuthService {
 
   /**
    * 1. 로그인 (JWT 발급)
-   * IDP 인증에 성공한 유저 정보를 받아 우리 서버 전용 JWT를 만듦.
+   * IDP 인증에 성공한 유저 정보를 받아 우리 서버 전용 JWT를 만듦.*
    */
   async login(user: any) {
-    // 이제 userId가 아니라 sub를 기준으로 페이로드를 만듦.
+    // sub를 기준으로 페이로드를 만듦.
     const payload = { 
       sub: user.sub, 
       name: user.name,

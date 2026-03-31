@@ -15,7 +15,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     });
   }
 
-  // NestJS 모듈이 초기화될 때 DB에 연결!!!!
+  // NestJS 모듈이 초기화될 때 DB에 연결
   async onModuleInit() {
     await this.$connect();
     this.logger.log('PrismaService: Database connected successfully.');

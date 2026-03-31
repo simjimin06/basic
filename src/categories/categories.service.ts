@@ -1,5 +1,5 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable, ConflictException } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service'; 
 
 @Injectable()
 export class CategoriesService {
@@ -7,7 +7,9 @@ export class CategoriesService {
 
   // 1. 모든 카테고리 목록 조회
   async findAll() {
-    return this.prisma.category.findMany();
+    return this.prisma.category.findMany({
+      where: { status: true },
+    });
   }
 
   // 2. 카테고리 추가
@@ -17,10 +19,11 @@ export class CategoriesService {
     });
   }
 
-  // 3. 카테고리 삭제
+  // 3. 카테고리 삭제 (Soft Delete)
   async remove(id: number) {
-    return this.prisma.category.delete({
+    return this.prisma.category.update({
       where: { id },
+      data: { status: false },
     });
   }
 
@@ -45,11 +48,83 @@ export class CategoriesService {
   async unsubscribe(userId: string, categoryId: number) {
     return this.prisma.subscription.delete({
       where: {
-        userId_categoryId: { // schema.prisma의 @@unique 설정 덕분에 가능!
+        userId_categoryId: {
           userId,
           categoryId: Number(categoryId),
         },
       },
     });
+  }
+
+  // [과제 1 & 2] 전체 카테고리 통계
+  async getCategoryStats() {
+    const categories = await this.prisma.category.findMany({
+      where: { status: true },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: { posts: true, subscribers: true },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+
+    return categories.map((c) => ({
+      categoryId: c.id,
+      categoryName: c.name,
+      postCount: c._count.posts,
+      subscriberCount: c._count.subscribers,
+    }));
+  }
+
+  // [과제 3-1] 내 정보 통계
+  async getMyCategoryStats(userId: string) {
+    const categories = await this.prisma.category.findMany({
+      where: { status: true },
+      select: {
+        id: true,
+        name: true,
+        subscribers: {
+          where: { userId: userId },
+          select: { categoryId: true },
+        },
+        _count: {
+          select: { posts: { where: { authorId: userId } } },
+        },
+      },
+      orderBy: { id: 'asc' },
+    });
+
+    return categories.map((c) => ({
+      categoryId: c.id,
+      categoryName: c.name,
+      isSubscribed: c.subscribers.length > 0,
+      myPostCount: c._count.posts,
+    }));
+  }
+
+  // [과제 3-2] 내 글 목록 페이징
+  async getMyPosts(userId: string, page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const posts = await this.prisma.post.findMany({
+      where: { authorId: userId, category: { status: true } },
+      take: limit,
+      skip: skip,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        createdAt: true,
+        category: { select: { name: true } },
+      },
+    });
+
+    return posts.map((p) => ({
+      postId: p.id,
+      categoryName: p.category.name,
+      title: p.title,
+      createdAt: p.createdAt,
+    }));
   }
 }
