@@ -2,6 +2,7 @@ import { Controller, Post, Delete, Get, Param, UseGuards, Req, Body, Query } fro
 import { AuthGuard } from '@nestjs/passport';
 import { CategoriesService } from './categories.service';
 
+
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}

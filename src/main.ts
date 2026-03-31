@@ -10,6 +10,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const logger = new Logger('Bootstrap');
+
+  // CORS 허용 (Swagger 테스트나 프론트엔드 연동 시 필수!)
+  app.enableCors();
+
+
   //로깅 (interceptor와 exception filter 전역 적용)
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
@@ -34,7 +39,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document); // http://localhost:3000/api 에서 접근 가능
 
-  await app.listen(3000);
+  //port 설정
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  
   logger.log(`Application is running on: ${await app.getUrl()}`);
   logger.log(`Swagger documentation available at: ${await app.getUrl()}/api`);
 }

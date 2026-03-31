@@ -11,7 +11,7 @@ export class PostResponseDto {
   @ApiProperty({ description: '작성자 ID (String)', example: 'user-uuid-here' })
   authorId: string;
 
-  // 💡 [추가된 부분] 카테고리 ID가 없으면 컨트롤러에서 에러가 납니다!
+  // 카테고리 ID가 없으면 컨트롤러에서 에러가 남.
   @ApiProperty({ description: '카테고리 ID (Int)', example: 1 })
   categoryId: number; 
 
