@@ -24,7 +24,7 @@ export class OwnerAuthGuard implements CanActivate {
     const post = await this.postsService.findOneById(postId);
 
     // auth 로직: 현재 사용자의 userId와 게시글의 authorId를 비교
-    if (post.authorId !== user.userId) {
+    if (post.authorId !== user.id) {
       // ID가 일치하지 않으면 403 Forbidden 에러 발생
       throw new ForbiddenException('본인이 작성한 게시글만 수정/삭제할 수 있습니다.');
     }

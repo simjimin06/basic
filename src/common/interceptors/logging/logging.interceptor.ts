@@ -1,5 +1,5 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Logger} from '@nestjs/common';
-import { Observable,tap } from 'rxjs';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Logger } from '@nestjs/common';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -7,26 +7,34 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
     const { method, url, query, body } = request;
     const now = Date.now();
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date().toISOString(); // 요구사항: timestamp
 
-    // 1. 요청(REQ) 로그
+    // --- 1. [REQ] 요청 로그 ---
+    // 요구사항: url, method, timestamp 포함
     let reqLog = `[REQ] ${method} ${url} - ${timestamp}`;
-    if (method === 'GET') reqLog += ` | Query: ${JSON.stringify(query)}`;
-    else reqLog += ` | Body: ${JSON.stringify(body)}`;
+
+    if (method === 'GET') {
+      // 요구사항: GET일 때 query params 포함
+      reqLog += ` | Query: ${JSON.stringify(query)}`;
+    } else if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      // 요구사항: POST, DELETE, PUT일 때 request body 포함
+      reqLog += ` | Body: ${JSON.stringify(body)}`;
+    }
     this.logger.log(reqLog);
 
     return next.handle().pipe(
+      // --- 2. [RES] 성공 응답 로그 (200, 201 등) ---
       tap((responseBody) => {
-        const response = context.switchToHttp().getResponse();
         const delay = Date.now() - now;
-
-        // 2. 응답(RES) 로그
+        // 요구사항: url, method, timestamp, status, response body 포함
         this.logger.log(
-          `[RES] ${method} ${url} ${response.statusCode} - ${delay}ms | Response: ${JSON.stringify(responseBody)}`,
+          `[RES] ${method} ${url} - ${timestamp} | Status: ${response.statusCode} (+${delay}ms) | Response: ${JSON.stringify(responseBody)}`,
         );
       }),
+
     );
   }
 }
